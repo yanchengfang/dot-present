@@ -1,6 +1,6 @@
 {
   "name": "@dot-present/components",
-  "version": "1.0.1-alpha.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.ts",
   "type": "module",
@@ -19,10 +19,10 @@
     "access": "public"
   },
   "dependencies": {
-    "vite": "^7.3.1",
-    "@vitejs/plugin-vue": "^6.0.5",
     "@dot-present/utils": "workspace:*",
-    "vitest": "^4.1.0",
-    "@vue/test-utils": "^2.4.6"
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/test-utils": "^2.4.6",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.0"
   }
 }
