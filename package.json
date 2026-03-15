@@ -1,0 +1,42 @@
+{
+  "name": "dot-present",
+  "version": "1.0.0",
+  "description": "vue3 + Ts UI components library",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "pnpm -C packages/components test",
+    "dev": "pnpm -C examples dev",
+    "build": "rollup -c && node generate-types.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.26.2",
+  "dependencies": {
+    "@dot-present/components": "workspace:*",
+    "@dot-present/theme-chalk": "workspace:*",
+    "@dot-present/utils": "workspace:*",
+    "vue": "^3.5.29",
+    "vue-router": "^5.0.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^1.0.0",
+    "@tsconfig/node18": "^18.2.6",
+    "@tsconfig/node24": "^24.0.4",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.8.1",
+    "jsdom": "^28.1.0",
+    "rollup": "^4.59.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-delete": "^3.0.2",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "rollup-plugin-vue": "^6.0.0",
+    "sass": "^1.98.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.0"
+  }
+}
