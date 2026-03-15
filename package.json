@@ -8,8 +8,9 @@
     "dev": "pnpm -C examples dev",
     "build": "rollup -c && node scripts/generate-types.cjs",
     "test": "pnpm -C packages/components test",
-    "prepublish": "node scripts/add-subpackages-deps.mjs",
-    "publish": "npx lerna publish"
+    "prepublish": "echo Depchecking subpackages... && node scripts/add-subpackages-deps.mjs",
+    "publish": "npx lerna publish",
+    "postpublish": "echo Publish completed!"
   },
   "files": [
     "/dist",

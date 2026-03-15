@@ -18,7 +18,7 @@ subpackages.forEach(pkg => {
       encoding: 'utf-8'
     });
     const result = JSON.parse(output);
-    let keysArray = Object.keys(result.missing);
+    let keysArray = Object.keys(result.missing).filter(key => !key.includes('@dot-present'));
     if (result.missing && keysArray.length > 0) {
       console.log(`${pkg} 缺失依赖:`, keysArray);
       // 可以将结果保存到临时文件，或直接进行下一步处理
@@ -31,7 +31,7 @@ subpackages.forEach(pkg => {
     if (error.stdout) {
       const result = JSON.parse(error.stdout);
       if (result.missing) {
-        let keysArray = Object.keys(result.missing);
+        let keysArray = Object.keys(result.missing).filter(key => !key.includes('@dot-present'));
         console.log(`${pkg} ❌缺失依赖:`, keysArray);
         addDepsToPackageJson(pkg, keysArray);
       }
