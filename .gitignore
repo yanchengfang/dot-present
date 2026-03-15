@@ -2,3 +2,4 @@ dist
 documents
 examples
 node_modules
+.npmrc

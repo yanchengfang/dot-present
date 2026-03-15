@@ -13,7 +13,12 @@
     "/dist",
     "LICENSE"
   ],
-  "keywords": ["UI", "vue3", "Ts", "Vite"],
+  "keywords": [
+    "UI",
+    "vue3",
+    "Ts",
+    "Vite"
+  ],
   "author": "Summery",
   "license": "ISC",
   "packageManager": "pnpm@10.26.2",
@@ -32,6 +37,7 @@
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
     "jsdom": "^28.1.0",
+    "lerna": "^9.0.7",
     "rollup": "^4.59.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-delete": "^3.0.2",
