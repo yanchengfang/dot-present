@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const componentsDir = path.resolve(__dirname, "dist", "components");
+const componentsDir = path.resolve(__dirname, "..", "dist", "components");
 const typesFile = path.resolve(componentsDir, "types.d.ts");
 
 const components = fs

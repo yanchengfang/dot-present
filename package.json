@@ -5,9 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "pnpm -C packages/components test",
     "dev": "pnpm -C examples dev",
-    "build": "rollup -c && node generate-types.cjs"
+    "build": "rollup -c && node scripts/generate-types.cjs",
+    "test": "pnpm -C packages/components test",
+    "prepublish": "node scripts/add-subpackages-deps.mjs",
+    "publish": "npx lerna publish"
   },
   "files": [
     "/dist",

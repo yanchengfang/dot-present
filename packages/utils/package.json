@@ -2,7 +2,7 @@
   "name": "@dot-present/utils",
   "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "types": "types.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,5 +11,8 @@
   "private": true,
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.26.2"
+  "packageManager": "pnpm@10.26.2",
+  "dependencies": {
+    "vue": "^3.5.29"
+  }
 }
