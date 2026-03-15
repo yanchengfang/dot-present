@@ -2,7 +2,7 @@
   "name": "@dot-present/theme-chalk",
   "version": "1.0.1",
   "description": "",
-  "main": "index.scss",
+  "style": "src/index.scss",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +10,9 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.26.2",
+  "peerDependencies": {
+    "sass-embedded": "^1.98.0"
+  },
   "publishConfig": {
     "access": "public"
   }
