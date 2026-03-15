@@ -1,6 +1,6 @@
 {
   "name": "@dot-present/utils",
-  "version": "1.0.2-alpha.0",
+  "version": "1.0.3-alpha.0",
   "description": "",
   "main": "index.ts",
   "types": "types.d.ts",
