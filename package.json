@@ -9,8 +9,12 @@
     "dev": "pnpm -C examples dev",
     "build": "rollup -c && node generate-types.cjs"
   },
-  "keywords": [],
-  "author": "",
+  "files": [
+    "/dist",
+    "LICENSE"
+  ],
+  "keywords": ["UI", "vue3", "Ts", "Vite"],
+  "author": "Summery",
   "license": "ISC",
   "packageManager": "pnpm@10.26.2",
   "dependencies": {
