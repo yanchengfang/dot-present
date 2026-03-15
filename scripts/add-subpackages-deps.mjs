@@ -32,8 +32,12 @@ subpackages.forEach(pkg => {
       const result = JSON.parse(error.stdout);
       if (result.missing) {
         let keysArray = Object.keys(result.missing).filter(key => !key.includes('@dot-present'));
-        console.log(`${pkg} ❌缺失依赖:`, keysArray);
-        addDepsToPackageJson(pkg, keysArray);
+        if (keysArray.length === 0) {
+          console.log(`${pkg} ✅没有缺失依赖`);
+        } else {
+          console.log(`${pkg} ❌缺失依赖:`, keysArray);
+          addDepsToPackageJson(pkg, keysArray);
+        }
       }
     } else {
       console.error(`${pkg} 执行失败:`, error.message);
