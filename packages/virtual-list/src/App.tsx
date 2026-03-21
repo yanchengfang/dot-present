@@ -2,10 +2,12 @@ import React, {
   useRef,
   useState,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useCallback,
   forwardRef,
   useImperativeHandle,
+  useReducer,
 } from "react";
 
 // 位置缓存项
@@ -55,10 +57,22 @@ export const VirtualList = forwardRef(
     // DOM refs
     const containerRef = useRef<HTMLDivElement>(null);
     const itemsRef = useRef<Map<string, HTMLElement>>(new Map());
+    const itemObserversRef = useRef<Map<string, ResizeObserver>>(new Map());
+    const isNearEndRef = useRef(false);
 
     // 状态
     const [scrollTop, setScrollTop] = useState(0);
     const [containerHeightVal, setContainerHeightVal] = useState(0);
+    const [, forceUpdate] = useReducer((v: number) => v + 1, 0);
+
+    const parsedContainerHeight = useMemo(() => {
+      if (typeof containerHeight === "number") return containerHeight;
+      if (typeof containerHeight === "string") {
+        const matched = containerHeight.trim().match(/^(\d+(?:\.\d+)?)px$/i);
+        if (matched) return Number(matched[1]);
+      }
+      return 0;
+    }, [containerHeight]);
 
     // ---------- 动态高度模式的位置缓存 ----------
     const positions = useRef<Position[]>([]);
@@ -76,6 +90,13 @@ export const VirtualList = forwardRef(
       });
     }, [data, estimatedItemHeight, isFixedHeight]);
 
+    useEffect(() => {
+      return () => {
+        itemObserversRef.current.forEach((observer) => observer.disconnect());
+        itemObserversRef.current.clear();
+      };
+    }, []);
+
     // 更新某个索引的高度，并修正后续偏移
     const updateItemHeight = useCallback(
       (index: number, newHeight: number) => {
@@ -87,20 +108,33 @@ export const VirtualList = forwardRef(
         // 修正从 index+1 开始的所有偏移量
         let diff = newHeight - oldHeight;
         for (let i = index + 1; i < positions.current.length; i++) {
-          positions.current[i].offset += diff;
+          const pos = positions.current[i];
+          if (pos) {
+            pos.offset += diff;
+          }
         }
-        // 触发重新渲染，确保滚动位置正确
-        setScrollTop((prev) => prev); // 微小 hack：强制刷新（实际可用更优雅的方式）
+        // 触发重新渲染，确保动态高度变化后可视区及时更新
+        forceUpdate();
       },
       [isFixedHeight],
     );
 
     // 监听容器高度变化
+    useLayoutEffect(() => {
+      if (!containerRef.current) return;
+      const initialHeight = containerRef.current.clientHeight;
+      if (initialHeight > 0) {
+        setContainerHeightVal(initialHeight);
+      }
+    }, []);
+
     useEffect(() => {
       if (!containerRef.current) return;
       const observer = new ResizeObserver((entries) => {
-        const height = entries[0].contentRect.height;
-        setContainerHeightVal(height);
+        if (entries.length > 0) {
+          const height = entries[0].contentRect.height;
+          setContainerHeightVal(height);
+        }
       });
       observer.observe(containerRef.current);
       return () => observer.disconnect();
@@ -108,14 +142,25 @@ export const VirtualList = forwardRef(
 
     // 计算当前可视区的起始/结束索引
     const { startIndex, endIndex, totalHeight } = useMemo(() => {
+      if (data.length === 0) {
+        return { startIndex: 0, endIndex: -1, totalHeight: 0 };
+      }
+      const effectiveContainerHeight =
+        containerHeightVal > 0
+          ? containerHeightVal
+          : parsedContainerHeight > 0
+            ? parsedContainerHeight
+            : estimatedItemHeight * 8;
+
       if (isFixedHeight) {
-        const start = Math.max(
-          0,
-          Math.floor(scrollTop / fixedItemHeight) - buffer,
+        const itemHeight = fixedItemHeight!;
+        const start = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+        const visibleCount = Math.max(
+          1,
+          Math.ceil(effectiveContainerHeight / itemHeight),
         );
-        const visibleCount = Math.ceil(containerHeightVal / fixedItemHeight);
         const end = Math.min(data.length - 1, start + visibleCount + buffer);
-        const total = data.length * fixedItemHeight;
+        const total = data.length * itemHeight;
         return { startIndex: start, endIndex: end, totalHeight: total };
       } else {
         // 二分查找起始索引
@@ -129,27 +174,30 @@ export const VirtualList = forwardRef(
             if (offset < scrollTop) low = mid + 1;
             else high = mid - 1;
           }
-          return low;
+          // 返回包含当前 scrollTop 的最后一个起始 offset <= scrollTop 的元素
+          return Math.max(0, low - 1);
         };
         const start = binarySearch(scrollTop);
         let end = start;
         let offsetEnd = positions.current[start]?.offset ?? 0;
         while (
           end < data.length - 1 &&
-          offsetEnd - scrollTop < containerHeightVal
+          offsetEnd - scrollTop < effectiveContainerHeight
         ) {
           end++;
-          offsetEnd =
-            positions.current[end]?.offset +
-            (positions.current[end]?.height ?? 0);
+          const endPos = positions.current[end];
+          offsetEnd = (endPos?.offset ?? 0) + (endPos?.height ?? 0);
         }
         // 增加缓冲区
         const startWithBuffer = Math.max(0, start - buffer);
         const endWithBuffer = Math.min(data.length - 1, end + buffer);
-        const total = positions.current.length
-          ? positions.current[positions.current.length - 1]?.offset +
-            (positions.current[positions.current.length - 1]?.height ?? 0)
-          : 0;
+        const total =
+          positions.current.length > 0
+            ? (() => {
+                const lastPos = positions.current[positions.current.length - 1];
+                return (lastPos?.offset ?? 0) + (lastPos?.height ?? 0);
+              })()
+            : 0;
         return {
           startIndex: startWithBuffer,
           endIndex: endWithBuffer,
@@ -163,6 +211,8 @@ export const VirtualList = forwardRef(
       buffer,
       fixedItemHeight,
       isFixedHeight,
+      parsedContainerHeight,
+      estimatedItemHeight,
     ]);
 
     // 滚动事件处理（含节流）
@@ -173,11 +223,13 @@ export const VirtualList = forwardRef(
         setScrollTop(newScrollTop);
         onScroll?.(e);
         // 触底检测
-        if (
-          onReachEnd &&
-          target.scrollHeight - target.scrollTop - target.clientHeight < 5
-        ) {
+        const nearEnd =
+          target.scrollHeight - target.scrollTop - target.clientHeight < 5;
+        if (onReachEnd && nearEnd && !isNearEndRef.current) {
+          isNearEndRef.current = true;
           onReachEnd();
+        } else if (!nearEnd) {
+          isNearEndRef.current = false;
         }
       },
       [onScroll, onReachEnd],
@@ -188,25 +240,34 @@ export const VirtualList = forwardRef(
       ref,
       () => ({
         scrollTo: (top: number) => {
-          if (containerRef.current) containerRef.current.scrollTop = top;
+          if (!containerRef.current) return;
+          const safeTop = Math.max(0, top);
+          containerRef.current.scrollTop = safeTop;
+          setScrollTop(safeTop);
         },
         scrollToIndex: (
           index: number,
           align: "start" | "center" | "end" = "start",
         ) => {
-          if (!containerRef.current) return;
+          if (!containerRef.current || data.length === 0) return;
+          const safeIndex = Math.min(Math.max(0, index), data.length - 1);
           let targetTop = 0;
           if (isFixedHeight) {
-            targetTop = index * fixedItemHeight;
+            targetTop = safeIndex * fixedItemHeight!;
           } else {
-            targetTop = positions.current[index]?.offset ?? 0;
+            targetTop = positions.current[safeIndex]?.offset ?? 0;
           }
+          const targetHeight = isFixedHeight
+            ? fixedItemHeight!
+            : positions.current[safeIndex]?.height ?? estimatedItemHeight;
           if (align === "center") {
-            targetTop -= containerHeightVal / 2;
+            targetTop -= (containerHeightVal - targetHeight) / 2;
           } else if (align === "end") {
-            targetTop -= containerHeightVal;
+            targetTop -= containerHeightVal - targetHeight;
           }
-          containerRef.current.scrollTop = Math.max(0, targetTop);
+          const safeTop = Math.max(0, targetTop);
+          containerRef.current.scrollTop = safeTop;
+          setScrollTop(safeTop);
         },
         getCurrentRange: () => ({ start: startIndex, end: endIndex }),
       }),
@@ -216,6 +277,8 @@ export const VirtualList = forwardRef(
         containerHeightVal,
         fixedItemHeight,
         isFixedHeight,
+        data.length,
+        estimatedItemHeight,
       ],
     );
 
@@ -233,10 +296,12 @@ export const VirtualList = forwardRef(
       const items = [];
       for (let i = startIndex; i <= endIndex && i < data.length; i++) {
         const item = data[i];
+        if (item === undefined) continue;
+
         const key = getKey(item, i);
         let top = 0;
         if (isFixedHeight) {
-          top = i * fixedItemHeight;
+          top = i * fixedItemHeight!;
         } else {
           top = positions.current[i]?.offset ?? 0;
         }
@@ -244,11 +309,35 @@ export const VirtualList = forwardRef(
           <div
             key={key}
             ref={(el) => {
-              if (!el) return;
               if (isFixedHeight) return;
-              itemsRef.current.set(key, el);
+              if (!el) {
+                itemsRef.current.delete(key);
+                const prevObserver = itemObserversRef.current.get(key);
+                if (prevObserver) {
+                  prevObserver.disconnect();
+                  itemObserversRef.current.delete(key);
+                }
+                return;
+              }
+
+              const htmlEl = el as unknown as HTMLElement;
+              itemsRef.current.set(key, htmlEl);
+              const prevObserver = itemObserversRef.current.get(key);
+              if (prevObserver) {
+                prevObserver.disconnect();
+              }
+              const resizeObserver = new ResizeObserver((entries) => {
+                if (entries.length === 0) return;
+                const newHeight = entries[0].contentRect.height;
+                if (newHeight > 0) {
+                  updateItemHeight(i, newHeight);
+                }
+              });
+              resizeObserver.observe(htmlEl);
+              itemObserversRef.current.set(key, resizeObserver);
+
               // 测量真实高度（初次渲染或内容变化）
-              const actualHeight = el.getBoundingClientRect().height;
+              const actualHeight = htmlEl.getBoundingClientRect().height;
               if (
                 actualHeight &&
                 positions.current[i]?.height !== actualHeight

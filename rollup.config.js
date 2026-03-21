@@ -1,4 +1,5 @@
 import typescript from "rollup-plugin-typescript2";
+import typescriptRollup from "@rollup/plugin-typescript";
 import vue from "rollup-plugin-vue";
 import postcss from "rollup-plugin-postcss";
 import del from "rollup-plugin-delete";
@@ -29,6 +30,7 @@ export default [
       }),
       typescript({
         tsconfig: "tsconfig.app.json",
+        exclude: ["packages/virtual-list/**"],
       }),
       terser(),
       copy({
@@ -62,6 +64,46 @@ export default [
           {
             src: "packages/theme-chalk/src/fonts/*",
             dest: "dist/theme-chalk/fonts",
+          },
+        ],
+      }),
+    ],
+  },
+  {
+    // 打包虚拟列表
+    input: "packages/virtual-list/src/index.tsx", // 打包入口
+    // 打包的输出
+    output: {
+      dir: "dist/virtual-list",
+      format: "esm",
+    },
+    // 外部依赖，这一部分依赖不需要进行打包
+    external: ["react", "react-dom", "react/jsx-runtime"],
+    // 指定要使用的插件，注意插件是有顺序
+    plugins: [
+      del({ targets: "dist/virtual-list" }), // 先把上一次的打包内容删除掉
+      postcss({
+        extract: false,
+      }),
+      typescriptRollup({
+        tsconfig: "packages/virtual-list/tsconfig.app.json",
+        include: ["packages/virtual-list/src/**/*.{ts,tsx}"],
+        exclude: [
+          "**/*.test.ts",
+          "node_modules/@vue/**",
+          "node_modules/vue/**",
+          "**/*.vue",
+          "vue-shim.d.ts",
+        ],
+        noEmitOnError: false,
+        transformers: [],
+      }),
+      terser(),
+      copy({
+        targets: [
+          {
+            src: "packages/virtual-list/package.json",
+            dest: "dist/virtual-list",
           },
         ],
       }),
