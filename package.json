@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm -C examples dev",
+    "start": "pnpm -C examples-cra start",
     "build": "rollup -c && node scripts/generate-types.cjs",
     "test": "pnpm -C packages/components test",
     "prepublish": "echo Depchecking subpackages... && node scripts/add-subpackages-deps.mjs",
@@ -29,6 +30,11 @@
     "@dot-present/components": "workspace:*",
     "@dot-present/theme-chalk": "workspace:*",
     "@dot-present/utils": "workspace:*",
+    "@dot-present/virtual-list": "workspace:*",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "vue": "^3.5.29",
     "vue-router": "^5.0.3"
   },
@@ -50,6 +56,7 @@
     "sass": "^1.98.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
+    "vite-plugin-vue-devtools": "^8.0.6",
     "vitest": "^4.1.0"
   }
 }

@@ -1,5 +1,6 @@
 packages:
-  - 'packages/*'  # 所有 packages 目录下的子目录都是一个包
-  - 'documents'
-  - 'examples'       
-  - '!**/test/**' # 排除测试目录
+  - "packages/*" # 所有 packages 目录下的子目录都是一个包
+  - "documents"
+  - "examples"
+  - "examples-cra"
+  - "!**/test/**" # 排除测试目录
