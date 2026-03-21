@@ -2,12 +2,6 @@ import { VirtualList } from "@dot-present/virtual-list";
 import type { VirtualListRef } from "@dot-present/virtual-list";
 import { useRef } from "react";
 
-// interface VirtualListRef {
-//   scrollTo: (scrollTop: number) => void;
-//   scrollToIndex: (index: number, align?: "start" | "center" | "end") => void;
-//   getCurrentRange: () => { start: number; end: number };
-// }
-
 const BigDataList = () => {
   const data = Array.from({ length: 10000 }, (_, i) => ({
     id: i,
