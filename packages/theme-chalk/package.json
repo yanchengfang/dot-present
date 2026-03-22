@@ -2,17 +2,19 @@
   "name": "@dot-present/theme-chalk",
   "version": "1.0.3-alpha.0",
   "description": "",
-  "style": "src/index.scss",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "style": "./dist/index.css",
+  "scripts": {},
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
   "license": "MIT",
-  "keywords": [],
+  "keywords": [
+    "css",
+    "scss",
+    "theme"
+  ],
   "author": "",
   "packageManager": "pnpm@10.26.2",
   "peerDependencies": {

@@ -38,11 +38,12 @@ export default [
     ],
   },
   {
-    // 打包样式的任务
+    // 打包样式：Rollup 只认 es/cjs 等 format，不能写 format: "css"。
+    // 由 postcss extract 把编译后的 CSS 写到 dist/index.js 同目录下的 index.css；index.js 为占位/空模块。
     input: "packages/theme-chalk/src/index.scss",
     output: {
       file: "packages/theme-chalk/dist/index.js",
-      format: "esm",
+      format: "es",
     },
     plugins: [
       del({
@@ -50,15 +51,7 @@ export default [
       }),
       postcss({
         extract: "index.css",
-        minimize: true, // 压缩
-      }),
-      copy({
-        targets: [
-          {
-            src: "packages/theme-chalk/src/fonts/*",
-            dest: "packages/theme-chalk/dist/fonts",
-          },
-        ],
+        minimize: true,
       }),
     ],
   },
