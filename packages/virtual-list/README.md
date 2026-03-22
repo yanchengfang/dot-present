@@ -496,3 +496,17 @@ const BigDataList = () => {
 实际开发中，也可以基于成熟库（如 `react-window`、`vue-virtual-scroller`）进行二次封装，但理解其内部原理有助于写出更贴合业务需求的自定义组件。
 
 以上思路和代码可直接用于生产环境，也可轻松移植到 Vue 或其他框架（核心逻辑不变，仅语法适配）。
+
+# 首屏样式挤在一起原因
+
+原因说明（结合代码与假设）
+假设 说明
+H1 updateItemHeight 里用 setScrollTop((prev) => prev) 想“强刷”。在 React 18 里，若新状态与旧状态相同（Object.is），会 直接跳过更新，组件 不会重渲染。
+H2 visibleItems 的 useMemo 没有把高度测量结果放进依赖。positions.current 虽在内存里被改掉，但 memo 仍返回旧的 JSX，里面的 translateY 仍是 预估高度，所以会 挤在一起 / 重叠。
+H3 原先二分查找用 return low，等价于找「第一个 offset > scrollTop」，而不是「最后一个 offset <= scrollTop」的可见首项，滚动后 起始索引会错。
+H4 展开/折叠只改变 子节点高度 时，同一 DOM 上的 ref 不一定会再次执行，仅靠 getBoundingClientRect 测一次不够；需要 ResizeObserver 在高度变化时再次 updateItemHeight。
+已做修改（调试日志仍保留）
+使用 useReducer 的 measureVersion：每次 updateItemHeight 成功后 bumpMeasure()，并把 measureVersion 写入 计算可视区与 visibleItems 的两个 useMemo 的依赖，保证 真实 offset 会反映到 translateY。
+修正 findStartIndex：改为「最大下标 i 满足 offset[i] <= scrollTop」。
+修正向下扩展可视区时的 offsetEnd 初值：从「当前首项的 底边」开始算，避免少算一行。
+为每项行容器加 ResizeObserver，并在卸载时 disconnect，避免展开动态内容后高度不更新。

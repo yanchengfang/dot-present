@@ -63,7 +63,8 @@ export const VirtualList = forwardRef(
     // 状态
     const [scrollTop, setScrollTop] = useState(0);
     const [containerHeightVal, setContainerHeightVal] = useState(0);
-    const [, forceUpdate] = useReducer((v: number) => v + 1, 0);
+    /** 动态高度测量后递增，驱动 range / visibleItems 的 memo 与真实 offset 同步 */
+    const [measureVersion, bumpMeasure] = useReducer((v: number) => v + 1, 0);
 
     const parsedContainerHeight = useMemo(() => {
       if (typeof containerHeight === "number") return containerHeight;
@@ -92,7 +93,7 @@ export const VirtualList = forwardRef(
 
     useEffect(() => {
       return () => {
-        itemObserversRef.current.forEach((observer) => observer.disconnect());
+        itemObserversRef.current.forEach((ro) => ro.disconnect());
         itemObserversRef.current.clear();
       };
     }, []);
@@ -113,8 +114,7 @@ export const VirtualList = forwardRef(
             pos.offset += diff;
           }
         }
-        // 触发重新渲染，确保动态高度变化后可视区及时更新
-        forceUpdate();
+        bumpMeasure();
       },
       [isFixedHeight],
     );
@@ -163,30 +163,35 @@ export const VirtualList = forwardRef(
         const total = data.length * itemHeight;
         return { startIndex: start, endIndex: end, totalHeight: total };
       } else {
-        // 二分查找起始索引
-        const binarySearch = (scrollTop: number) => {
-          let low = 0,
-            high = data.length - 1;
+        // 二分：最大 i 满足 offset[i] <= scrollTop（首项可见行的上沿）
+        const findStartIndex = (st: number) => {
+          let low = 0;
+          let high = data.length - 1;
+          let ans = 0;
           while (low <= high) {
             const mid = Math.floor((low + high) / 2);
-            const offset = positions.current[mid]?.offset ?? 0;
-            if (offset === scrollTop) return mid;
-            if (offset < scrollTop) low = mid + 1;
-            else high = mid - 1;
+            const off = positions.current[mid]?.offset ?? 0;
+            if (off <= st) {
+              ans = mid;
+              low = mid + 1;
+            } else {
+              high = mid - 1;
+            }
           }
           // 返回包含当前 scrollTop 的最后一个起始 offset <= scrollTop 的元素
-          return Math.max(0, low - 1);
+          return ans;
         };
-        const start = binarySearch(scrollTop);
+        const start = findStartIndex(scrollTop);
         let end = start;
-        let offsetEnd = positions.current[start]?.offset ?? 0;
+        const startPos = positions.current[start];
+        let offsetEnd = (startPos?.offset ?? 0) + (startPos?.height ?? 0);
         while (
           end < data.length - 1 &&
           offsetEnd - scrollTop < effectiveContainerHeight
         ) {
           end++;
-          const endPos = positions.current[end];
-          offsetEnd = (endPos?.offset ?? 0) + (endPos?.height ?? 0);
+          const p = positions.current[end];
+          offsetEnd = (p?.offset ?? 0) + (p?.height ?? 0);
         }
         // 增加缓冲区
         const startWithBuffer = Math.max(0, start - buffer);
@@ -211,6 +216,7 @@ export const VirtualList = forwardRef(
       buffer,
       fixedItemHeight,
       isFixedHeight,
+      measureVersion,
       parsedContainerHeight,
       estimatedItemHeight,
     ]);
@@ -259,7 +265,7 @@ export const VirtualList = forwardRef(
           }
           const targetHeight = isFixedHeight
             ? fixedItemHeight!
-            : positions.current[safeIndex]?.height ?? estimatedItemHeight;
+            : (positions.current[safeIndex]?.height ?? estimatedItemHeight);
           if (align === "center") {
             targetTop -= (containerHeightVal - targetHeight) / 2;
           } else if (align === "end") {
@@ -311,30 +317,25 @@ export const VirtualList = forwardRef(
             ref={(el) => {
               if (isFixedHeight) return;
               if (!el) {
-                itemsRef.current.delete(key);
-                const prevObserver = itemObserversRef.current.get(key);
-                if (prevObserver) {
-                  prevObserver.disconnect();
+                const prev = itemObserversRef.current.get(key);
+                if (prev) {
+                  prev.disconnect();
                   itemObserversRef.current.delete(key);
                 }
+                itemsRef.current.delete(key);
                 return;
               }
 
               const htmlEl = el as unknown as HTMLElement;
               itemsRef.current.set(key, htmlEl);
-              const prevObserver = itemObserversRef.current.get(key);
-              if (prevObserver) {
-                prevObserver.disconnect();
-              }
-              const resizeObserver = new ResizeObserver((entries) => {
-                if (entries.length === 0) return;
-                const newHeight = entries[0].contentRect.height;
-                if (newHeight > 0) {
-                  updateItemHeight(i, newHeight);
-                }
+              const prevObs = itemObserversRef.current.get(key);
+              if (prevObs) prevObs.disconnect();
+              const ro = new ResizeObserver((entries) => {
+                const h = entries[0]?.contentRect.height;
+                if (h && h > 0) updateItemHeight(i, h);
               });
-              resizeObserver.observe(htmlEl);
-              itemObserversRef.current.set(key, resizeObserver);
+              ro.observe(el);
+              itemObserversRef.current.set(key, ro);
 
               // 测量真实高度（初次渲染或内容变化）
               const actualHeight = htmlEl.getBoundingClientRect().height;
@@ -367,6 +368,7 @@ export const VirtualList = forwardRef(
       fixedItemHeight,
       renderItem,
       updateItemHeight,
+      measureVersion,
     ]);
 
     // 容器样式

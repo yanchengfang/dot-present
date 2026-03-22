@@ -16,39 +16,32 @@ const BigDataList = () => {
   useEffect(() => {
     setExpandedSet(() => {
       const next = new Set<number>();
-      while (next.size < 600) {
-        next.add(Math.floor(Math.random() * data.length));
-      }
+      next.add(2);
+      next.add(3);
+      next.add(8);
+      next.add(12);
+      next.add(16);
       return next;
     });
   }, []);
 
-  // const randomExpand = () => {
-  //   setExpandedSet(() => {
-  //     const next = new Set<number>();
-  //     while (next.size < 600) {
-  //       next.add(Math.floor(Math.random() * data.length));
-  //     }
-  //     return next;
-  //   });
-  // };
-
   return (
     <div>
       <div style={{ marginBottom: "8px", display: "flex", gap: "8px" }}>
-        {/* <button onClick={randomExpand}>随机扩展 600 行</button> */}
         <button onClick={() => setExpandedSet(new Set())}>收起全部</button>
       </div>
       <VirtualList
         ref={ref}
         data={data}
-        itemKey={(item) => (item as { id: number }).id.toString()}
+        itemKey={(item, index) =>
+          (item as { id: number }).id.toString()
+        }
         estimatedItemHeight={90}
         containerHeight="500px"
         bufferSize={5}
         onReachEnd={() => console.log("load more")}
-        renderItem={(item, index) => {
-          const isExpanded = expandedSet.has(index);
+        renderItem={(item: unknown, index: number) => {
+          const isExpanded = expandedSet.has(index as number);
           return (
             <div
               style={{
@@ -63,7 +56,7 @@ const BigDataList = () => {
               </p>
               {isExpanded ? (
                 <div style={{ marginTop: "8px", color: "#333" }}>
-                  {Array.from({ length: 8 }, (_, i) => (
+                  {Array.from({ length: 4 }, (_, i) => (
                     <p key={i} style={{ margin: "4px 0", fontSize: "12px" }}>
                       Dynamic content line {i + 1}
                     </p>
@@ -74,9 +67,6 @@ const BigDataList = () => {
           );
         }}
       />
-      <div style={{ marginTop: "8px", fontSize: "12px", color: "#666" }}>
-        当前扩展行数: {expandedSet.size}
-      </div>
     </div>
   );
 };

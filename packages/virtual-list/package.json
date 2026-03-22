@@ -2,13 +2,12 @@
   "name": "@dot-present/virtual-list",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "./src/index.js",
   "module": "./src/index.tsx",
-  "type": "module",
   "types": "./src/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "tsc": "tsc"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
