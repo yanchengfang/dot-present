@@ -90,6 +90,14 @@ module.exports = function (webpackEnv) {
   const isEnvDevelopment = webpackEnv === "development";
   const isEnvProduction = webpackEnv === "production";
 
+  // Monorepo：子包走 exports.development → src 时，Babel 需能编译该目录（仅 dev）
+  const virtualListMonorepoSrc = path.resolve(
+    paths.appPath,
+    "../packages/virtual-list/src",
+  );
+  const includeVirtualListMonorepoSrc =
+    isEnvDevelopment && fs.existsSync(virtualListMonorepoSrc);
+
   // Variable used for enabling profiling in Production
   // passed into alias object. Uses a flag if passed into the build command
   const isEnvProductionProfile =
@@ -293,6 +301,32 @@ module.exports = function (webpackEnv) {
       ],
     },
     resolve: {
+      // Webpack 5：import 走 resolve.byDependency.esm，顶层 conditionNames 不会参与 exports 解析。
+      // 必须在 esm / commonjs 里显式带上 development，才会命中子包 exports.development。
+      ...(isEnvDevelopment
+        ? {
+            byDependency: {
+              esm: {
+                conditionNames: [
+                  "development",
+                  "browser",
+                  "import",
+                  "module",
+                  "default",
+                ],
+              },
+              commonjs: {
+                conditionNames: [
+                  "development",
+                  "browser",
+                  "require",
+                  "module",
+                  "default",
+                ],
+              },
+            },
+          }
+        : {}),
       // This allows you to set a fallback for where webpack should look for modules.
       // We placed these paths second because we want `node_modules` to "win"
       // if there are any conflicts. This matches Node resolution mechanism.
@@ -403,7 +437,9 @@ module.exports = function (webpackEnv) {
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              include: paths.appSrc,
+              include: includeVirtualListMonorepoSrc
+                ? [paths.appSrc, virtualListMonorepoSrc]
+                : paths.appSrc,
               loader: require.resolve("babel-loader"),
               options: {
                 customize:
