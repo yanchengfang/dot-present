@@ -32,14 +32,6 @@ export default [
         exclude: ["packages/virtual-list/**"],
       }),
       terser(),
-      copy({
-        targets: [
-          {
-            src: "packages/components/package.json",
-            dest: "packages/components/dist",
-          },
-        ],
-      }),
     ],
   },
   {
@@ -59,10 +51,6 @@ export default [
       }),
       copy({
         targets: [
-          {
-            src: "packages/theme-chalk/package.json",
-            dest: "packages/theme-chalk/dist",
-          },
           {
             src: "packages/theme-chalk/src/fonts/*",
             dest: "packages/theme-chalk/dist/fonts",
@@ -105,14 +93,6 @@ export default [
         extract: false,
       }),
       terser(),
-      copy({
-        targets: [
-          {
-            src: "packages/virtual-list/package.json",
-            dest: "packages/virtual-list/dist",
-          },
-        ],
-      }),
     ],
   },
 ];
