@@ -2,8 +2,8 @@
   "name": "@dot-present/components",
   "version": "1.0.3-alpha.0",
   "description": "",
-  "main": "index.ts",
   "type": "module",
+  "main": "index.ts",
   "types": "types.d.ts",
   "scripts": {
     "test": "vitest"

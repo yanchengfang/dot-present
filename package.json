@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "pnpm -C examples dev",
     "start": "pnpm -C examples-cra start",
-    "build": "rollup -c && node scripts/generate-types.cjs",
+    "build": "rollup -c",
     "test": "pnpm -C packages/components test",
     "prepublish": "echo Depchecking subpackages... && node scripts/add-subpackages-deps.mjs",
     "publish": "npx lerna publish",

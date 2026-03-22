@@ -1,5 +1,4 @@
 import typescript from "rollup-plugin-typescript2";
-import typescriptRollup from "@rollup/plugin-typescript";
 import vue from "rollup-plugin-vue";
 import postcss from "rollup-plugin-postcss";
 import del from "rollup-plugin-delete";
@@ -85,12 +84,15 @@ export default [
     // 指定要使用的插件，注意插件是有顺序
     plugins: [
       del({ targets: "packages/virtual-list/dist" }), // 先把上一次的打包内容删除掉
-      postcss({
-        extract: false,
-      }),
-      typescriptRollup({
+      // 与 components 一致使用 rollup-plugin-typescript2；@rollup/plugin-typescript 未先剥离 TS 语法时会导致 Rollup 直接解析 export type 报错
+      typescript({
         tsconfig: "packages/virtual-list/tsconfig.app.json",
-        include: ["packages/virtual-list/src/**/*.{ts,tsx}"],
+        tsconfigOverride: {
+          compilerOptions: {
+            outDir: "packages/virtual-list/dist",
+          },
+        },
+        check: false,
         exclude: [
           "**/*.test.ts",
           "node_modules/@vue/**",
@@ -98,8 +100,9 @@ export default [
           "**/*.vue",
           "vue-shim.d.ts",
         ],
-        noEmitOnError: false,
-        transformers: [],
+      }),
+      postcss({
+        extract: false,
       }),
       terser(),
       copy({
