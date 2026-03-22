@@ -1,6 +1,6 @@
 {
   "name": "@dot-present/components",
-  "version": "1.0.4-alpha.0",
+  "version": "1.0.5-alpha.0",
   "description": "",
   "type": "module",
   "main": "./dist/index.esm.js",
