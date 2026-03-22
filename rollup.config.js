@@ -14,14 +14,14 @@ export default [
     input: "packages/components/index.ts", // 打包入口
     // 打包的输出
     output: {
-      dir: "dist/components",
+      dir: "packages/components/dist",
       format: "esm",
     },
     // 外部依赖，这一部分依赖不需要进行打包
     external: ["vue"],
     // 指定要使用的插件，注意插件是有顺序
     plugins: [
-      del({ targets: "dist/components" }), // 先把上一次的打包内容删除掉
+      del({ targets: "packages/components/dist" }), // 先把上一次的打包内容删除掉
       vue({
         include: ["**/*.vue"],
       }),
@@ -35,7 +35,10 @@ export default [
       terser(),
       copy({
         targets: [
-          { src: "packages/components/package.json", dest: "dist/components" },
+          {
+            src: "packages/components/package.json",
+            dest: "packages/components/dist",
+          },
         ],
       }),
     ],
@@ -44,12 +47,12 @@ export default [
     // 打包样式的任务
     input: "packages/theme-chalk/src/index.scss",
     output: {
-      file: "dist/theme-chalk/index.js",
+      file: "packages/theme-chalk/dist/index.js",
       format: "esm",
     },
     plugins: [
       del({
-        targets: "dist/theme-chalk",
+        targets: "packages/theme-chalk/dist",
       }),
       postcss({
         extract: "index.css",
@@ -59,11 +62,11 @@ export default [
         targets: [
           {
             src: "packages/theme-chalk/package.json",
-            dest: "dist/theme-chalk",
+            dest: "packages/theme-chalk/dist",
           },
           {
             src: "packages/theme-chalk/src/fonts/*",
-            dest: "dist/theme-chalk/fonts",
+            dest: "packages/theme-chalk/dist/fonts",
           },
         ],
       }),
@@ -74,14 +77,14 @@ export default [
     input: "packages/virtual-list/src/index.tsx", // 打包入口
     // 打包的输出
     output: {
-      dir: "dist/virtual-list",
+      dir: "packages/virtual-list/dist",
       format: "esm",
     },
     // 外部依赖，这一部分依赖不需要进行打包
     external: ["react", "react-dom", "react/jsx-runtime"],
     // 指定要使用的插件，注意插件是有顺序
     plugins: [
-      del({ targets: "dist/virtual-list" }), // 先把上一次的打包内容删除掉
+      del({ targets: "packages/virtual-list/dist" }), // 先把上一次的打包内容删除掉
       postcss({
         extract: false,
       }),
@@ -103,7 +106,7 @@ export default [
         targets: [
           {
             src: "packages/virtual-list/package.json",
-            dest: "dist/virtual-list",
+            dest: "packages/virtual-list/dist",
           },
         ],
       }),

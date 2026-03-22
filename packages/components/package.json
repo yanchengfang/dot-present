@@ -8,9 +8,14 @@
   "scripts": {
     "test": "vitest"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
   "keywords": [],
   "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.26.2",
   "peerDependencies": {
     "vue": "^3.0.0"

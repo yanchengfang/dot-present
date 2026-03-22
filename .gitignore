@@ -1,5 +1,6 @@
 dist
 documents
 examples
+examples-cra
 node_modules
 .npmrc

@@ -6,9 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
   "keywords": [],
   "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.26.2",
   "peerDependencies": {
     "sass-embedded": "^1.98.0"
