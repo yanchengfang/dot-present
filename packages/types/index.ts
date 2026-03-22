@@ -1,3 +1,0 @@
-// // index.ts
-// export * from "@dot-present/components";
-// // ...

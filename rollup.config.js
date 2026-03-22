@@ -14,7 +14,7 @@ export default [
     input: "packages/components/index.ts", // 打包入口
     // 打包的输出
     output: {
-      dir: "packages/components/dist",
+      file: "packages/components/dist/index.esm.js",
       format: "esm",
     },
     // 外部依赖，这一部分依赖不需要进行打包
@@ -29,8 +29,10 @@ export default [
         extract: false,
       }),
       typescript({
-        tsconfig: "tsconfig.app.json",
-        exclude: ["packages/virtual-list/**"],
+        // 使用包内 tsconfig，避免继承根 tsconfig.app.json 时
+        // 把 virtual-list 一并纳入、rootDir 落到 packages/
+        // 导致 .d.ts 进 dist/components/**
+        tsconfig: "packages/components/tsconfig.build.json",
       }),
       terser(),
     ],

@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.app.json",
+  "include": ["**/*.ts", "**/*.vue", "../../vue-shim.d.ts"],
+  "exclude": ["**/test/**"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "declaration": true,
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.components.build.tsbuildinfo"
+  }
+}

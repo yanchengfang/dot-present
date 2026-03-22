@@ -3,8 +3,9 @@
   "version": "1.0.4-alpha.0",
   "description": "",
   "type": "module",
-  "main": "index.ts",
-  "types": "types.d.ts",
+  "main": "./dist/index.esm.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "test": "vitest"
   },
