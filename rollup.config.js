@@ -4,6 +4,7 @@ import postcss from "rollup-plugin-postcss";
 import del from "rollup-plugin-delete";
 import copy from "rollup-plugin-copy";
 import terser from "@rollup/plugin-terser";
+import dts from "rollup-plugin-dts";
 
 // 导出一个数组，该数组里面是一个一个的对象
 // 每一个对象就是一个打包任务
@@ -62,11 +63,20 @@ export default [
   {
     // 打包虚拟列表
     input: "packages/virtual-list/src/index.tsx", // 打包入口
-    // 打包的输出
-    output: {
-      dir: "packages/virtual-list/dist",
-      format: "esm",
-    },
+    // 打包的输出（使用 file：dir 必须是目录，不能指向具体 .js 文件名）
+    output: [
+      {
+        file: "packages/virtual-list/dist/index.esm.js",
+        format: "esm",
+        sourcemap: true,
+      },
+      {
+        file: "packages/virtual-list/dist/index.cjs.js",
+        format: "cjs",
+        sourcemap: true,
+        exports: "named",
+      },
+    ],
     // 外部依赖，这一部分依赖不需要进行打包
     external: ["react", "react-dom", "react/jsx-runtime"],
     // 指定要使用的插件，注意插件是有顺序
@@ -75,9 +85,13 @@ export default [
       // 与 components 一致使用 rollup-plugin-typescript2；@rollup/plugin-typescript 未先剥离 TS 语法时会导致 Rollup 直接解析 export type 报错
       typescript({
         tsconfig: "packages/virtual-list/tsconfig.app.json",
+        declaration: false,
+        // tsconfig 里若 emitDeclarationOnly: true，TS 不产出 JS，rpt2 无法给 Rollup 喂 JS，会退回解析裸 .tsx 并在 interface 处报错
         tsconfigOverride: {
           compilerOptions: {
             outDir: "packages/virtual-list/dist",
+            emitDeclarationOnly: false,
+            declaration: false,
           },
         },
         check: false,
@@ -94,5 +108,15 @@ export default [
       }),
       terser(),
     ],
+  },
+  {
+    // 类型声明合并为单个 .d.ts
+    input: "packages/virtual-list/src/index.tsx",
+    output: {
+      file: "packages/virtual-list/dist/index.d.ts",
+      format: "es",
+    },
+    external: ["react", "react-dom", "react/jsx-runtime"],
+    plugins: [dts()],
   },
 ];

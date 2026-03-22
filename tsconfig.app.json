@@ -11,6 +11,7 @@
     "noUncheckedIndexedAccess": true,
     "allowImportingTsExtensions": false,
     "declaration": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },

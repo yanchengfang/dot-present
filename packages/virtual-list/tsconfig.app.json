@@ -13,7 +13,11 @@
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "noEmit": false,
-    "outDir": "../../dist/virtual-list"
+    "declaration": true,
+    "declarationDir": "./temp-types",
+    "emitDeclarationOnly": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": ["src/**/*.tsx", "src/**/*.ts"],
   "exclude": [

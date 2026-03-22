@@ -33,7 +33,7 @@ const BigDataList = () => {
       <VirtualList
         ref={ref}
         data={data}
-        itemKey={(item, index) =>
+        itemKey={(item: any, index: number) =>
           (item as { id: number }).id.toString()
         }
         estimatedItemHeight={90}
