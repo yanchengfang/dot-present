@@ -1,5 +1,5 @@
-import { VirtualList } from "@dot-present/virtual-list";
-import type { VirtualListRef } from "@dot-present/virtual-list";
+import { VirtualList } from "@dot-present/virtual-list/src";
+import type { VirtualListRef } from "@dot-present/virtual-list/src";
 import { useMemo, useRef, useState, useEffect } from "react";
 
 const BigDataList = () => {
