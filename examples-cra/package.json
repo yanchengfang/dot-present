@@ -109,8 +109,7 @@
     "modulePaths": [],
     "moduleNameMapper": {
       "^react-native$": "react-native-web",
-      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
-      "^@dot-present/virtual-list$": "<rootDir>/src/__mocks__/virtual-list.tsx"
+      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
     },
     "moduleFileExtensions": [
       "web.js",
