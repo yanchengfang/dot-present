@@ -2,40 +2,61 @@ import typescript from "rollup-plugin-typescript2";
 import vue from "rollup-plugin-vue";
 import postcss from "rollup-plugin-postcss";
 import del from "rollup-plugin-delete";
-import copy from "rollup-plugin-copy";
 import terser from "@rollup/plugin-terser";
 import dts from "rollup-plugin-dts";
+
+const componentsTsPlugins = (emitDeclaration) => [
+  vue({
+    include: ["**/*.vue"],
+  }),
+  postcss({
+    extract: false,
+  }),
+  typescript({
+    tsconfig: "packages/components/tsconfig.json",
+    ...(emitDeclaration
+      ? {}
+      : {
+          tsconfigOverride: {
+            compilerOptions: {
+              declaration: false,
+            },
+          },
+        }),
+  }),
+  terser(),
+];
 
 // 导出一个数组，该数组里面是一个一个的对象
 // 每一个对象就是一个打包任务
 export default [
   {
-    // 打包组件的任务
-    input: "packages/components/index.ts", // 打包入口
-    // 打包的输出
+    // 全量入口：单文件 dist/index.esm.js
+    input: "packages/components/index.ts",
     output: {
       file: "packages/components/dist/index.esm.js",
       format: "esm",
     },
-    // 外部依赖，这一部分依赖不需要进行打包
     external: ["vue"],
-    // 指定要使用的插件，注意插件是有顺序
     plugins: [
-      del({ targets: "packages/components/dist" }), // 先把上一次的打包内容删除掉
-      vue({
-        include: ["**/*.vue"],
-      }),
-      postcss({
-        extract: false,
-      }),
-      typescript({
-        // 使用包内 tsconfig，避免继承根 tsconfig.app.json 时
-        // 把 virtual-list 一并纳入、rootDir 落到 packages/
-        // 导致 .d.ts 进 dist/components/**
-        tsconfig: "packages/components/tsconfig.build.json",
-      }),
-      terser(),
+      del({ targets: "packages/components/dist" }),
+      ...componentsTsPlugins(true),
     ],
+  },
+  {
+    // 多入口分包：公共模块（如 withInstall）抽到 dist/chunks/
+    input: {
+      button: "packages/components/button/index.ts",
+      card: "packages/components/card/index.ts",
+    },
+    output: {
+      dir: "packages/components/dist",
+      format: "esm",
+      entryFileNames: "[name]/index.esm.js",
+      chunkFileNames: "chunks/[name]-[hash].js",
+    },
+    external: ["vue"],
+    plugins: componentsTsPlugins(false),
   },
   {
     // 打包样式：Rollup 只认 es/cjs 等 format，不能写 format: "css"。
@@ -79,9 +100,8 @@ export default [
       del({ targets: "packages/virtual-list/dist" }), // 先把上一次的打包内容删除掉
       // 与 components 一致使用 rollup-plugin-typescript2；@rollup/plugin-typescript 未先剥离 TS 语法时会导致 Rollup 直接解析 export type 报错
       typescript({
-        tsconfig: "packages/virtual-list/tsconfig.app.json",
+        tsconfig: "packages/virtual-list/tsconfig.json",
         declaration: false,
-        // tsconfig 里若 emitDeclarationOnly: true，TS 不产出 JS，rpt2 无法给 Rollup 喂 JS，会退回解析裸 .tsx 并在 interface 处报错
         tsconfigOverride: {
           compilerOptions: {
             outDir: "packages/virtual-list/dist",

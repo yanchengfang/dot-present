@@ -1,4 +1,4 @@
 import Card from "./src/card.vue";
-import { withInstall } from "@dot-present/utils";
+import { withInstall } from "../utils/with-install";
 
 export default withInstall(Card);

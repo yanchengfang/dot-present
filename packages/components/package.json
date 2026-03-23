@@ -6,6 +6,23 @@
   "main": "./dist/index.esm.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "default": "./dist/index.esm.js"
+    },
+    "./button": {
+      "types": "./dist/button/index.d.ts",
+      "import": "./dist/button/index.esm.js",
+      "default": "./dist/button/index.esm.js"
+    },
+    "./card": {
+      "types": "./dist/card/index.d.ts",
+      "import": "./dist/card/index.esm.js",
+      "default": "./dist/card/index.esm.js"
+    }
+  },
   "scripts": {
     "test": "vitest"
   },
