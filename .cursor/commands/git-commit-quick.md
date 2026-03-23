@@ -7,17 +7,17 @@
 1. 先运行并简要解读：
    - `git status --short`
    - `git diff --staged`
-2. 如果没有已暂存内容，给出建议的 `git add` 命令并等待我确认是否执行。
-3. 基于本次改动生成 2 条简洁的 Conventional Commit 候选（如 `feat:` / `fix:` / `chore:`）。
-4. 让我选择 message，并再次确认是否提交。
-5. 仅在我明确确认后执行：
-   - `git commit -m "<chosen-message>"`
-6. 提交后输出：
+2. 如果没有已暂存内容，直接执行 `git add .`。
+3. 基于本次改动生成 1 条简洁中文的 Conventional Commit 候选（如 `feat:` / `fix:` / `chore:`）。
+4. 然后执行：
+   - `git commit -m "<message>"`
+5. 提交后输出：
    - `git show --name-status --oneline -1`
    - `git status --short`
+   <!-- 6. 提交后执行：
+   - `git push` -->
 
 ## 安全约束
 
 - 若发现可能敏感文件（如 `.env`、密钥、证书、token），立即停止并提醒我处理。
-- 未经确认，禁止执行 `git commit`。
-- 输出保持简短，优先给可执行结论。
+- 快速提交代码，输出保持简短，减少交互。
