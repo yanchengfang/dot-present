@@ -4,3 +4,4 @@ examples
 examples-cra
 node_modules
 .npmrc
+.cursor
