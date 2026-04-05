@@ -1,4 +1,4 @@
-# 在 monorepo 内安装依赖并构建文档；产物为静态目录，可单独用于 OSS/CDN、或构建下方 Docker 镜像
+# 在 monorepo 内安装依赖并构建文档；产物为静态目录，可 rsync 到 VPS 或由其它流水线消费
 name: VitePress 文档构建
 
 on:
@@ -11,7 +11,6 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - 'rollup.config.js'
-      - 'deploy/vitepress/**'
       - '.github/workflows/vitepress-docs.yml'
   workflow_dispatch:
 
@@ -51,9 +50,6 @@ jobs:
           name: vitepress-dist
           path: docs/.vitepress/dist
           retention-days: 14
-
-      - name: 校验仅静态资源的镜像可构建
-        run: docker build -f deploy/vitepress/Dockerfile -t dot-present-docs:ci .
 
       # 推镜像示例（按需取消注释并配置 monorepo 仓库的 Secrets）
       # - name: 登录容器镜像仓库

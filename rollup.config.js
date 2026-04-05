@@ -1,4 +1,6 @@
+import path from "node:path";
 import typescript from "rollup-plugin-typescript2";
+import copy from 'rollup-plugin-copy';
 import vue from "rollup-plugin-vue";
 import postcss from "rollup-plugin-postcss";
 import del from "rollup-plugin-delete";
@@ -76,6 +78,22 @@ export default [
       postcss({
         extract: "index.css",
         minimize: true,
+      }),
+      copy({
+        targets: [
+          {
+            // 将 src 下源文件按「相对 src 的路径」写入 dist，避免出现 dist/theme-chalk/... 多一层包名
+            src: "packages/theme-chalk/src/**/*",
+            dest: "packages/theme-chalk/dist",
+            flatten: true,
+            rename: (_name, _ext, fullPath) =>
+              path.relative(
+                path.resolve("packages/theme-chalk/src"),
+                fullPath,
+              ),
+          },
+        ],
+        verbose: true,
       }),
     ],
   },
