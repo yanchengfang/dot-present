@@ -1,0 +1,24 @@
+# 在仓库根目录执行：docker compose -f deploy/vitepress/docker-compose.yml up -d --build
+# 须先完成 pnpm build && pnpm docs:build，否则 COPY 的 dist 不存在会导致构建失败
+#
+# 与「现有 Nginx 反代」配合：
+# - 方式 A：文档与 Nginx 加入同一 Docker 网络，可注释掉 ports，在 Nginx 里 proxy_pass http://dot-present-docs:80
+# - 方式 B：保留下方 4173:80，Nginx 容器通过 host.docker.internal:4173（需 host-gateway）或 172.17.0.1:4173 访问
+services:
+  dot-present-docs:
+    image: dot-present-docs:local
+    build:
+      context: ../..
+      dockerfile: deploy/vitepress/Dockerfile
+    ports:
+      - "4173:80"
+    restart: unless-stopped
+    # 与现有 Nginx 同网时用（将 nginx-proxy 换成你机器上实际网络名）：
+    # networks:
+    #   - default
+    #   - nginx-proxy
+
+# networks:
+#   nginx-proxy:
+#     external: true
+#     name: nginx-proxy

@@ -21,6 +21,21 @@
       "types": "./dist/card/index.d.ts",
       "import": "./dist/card/index.esm.js",
       "default": "./dist/card/index.esm.js"
+    },
+    "./form": {
+      "types": "./dist/form/index.d.ts",
+      "import": "./dist/form/index.esm.js",
+      "default": "./dist/form/index.esm.js"
+    },
+    "./lazy-load": {
+      "types": "./dist/lazy-load/index.d.ts",
+      "import": "./dist/lazy-load/index.esm.js",
+      "default": "./dist/lazy-load/index.esm.js"
+    },
+    "./tabs": {
+      "types": "./dist/tabs/index.d.ts",
+      "import": "./dist/tabs/index.esm.js",
+      "default": "./dist/tabs/index.esm.js"
     }
   },
   "scripts": {

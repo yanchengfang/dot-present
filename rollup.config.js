@@ -48,6 +48,9 @@ export default [
     input: {
       button: "packages/components/button/index.ts",
       card: "packages/components/card/index.ts",
+      form: "packages/components/form/index.ts",
+      "lazy-load": "packages/components/lazy-load/index.ts",
+      tabs: "packages/components/tabs/index.ts",
     },
     output: {
       dir: "packages/components/dist",

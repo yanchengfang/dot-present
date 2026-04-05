@@ -5,3 +5,5 @@ examples-cra
 node_modules
 .npmrc
 .cursor
+docs/.vitepress/dist
+docs/.vitepress/cache

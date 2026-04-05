@@ -7,11 +7,14 @@
   "scripts": {
     "dev": "pnpm -C examples dev",
     "start": "pnpm -C examples-cra start",
-    "build": "rollup -c",
+    "build": "rollup -c && pnpm -C packages/virtual-list-v2 build",
     "test": "pnpm -C packages/components test",
     "prepublish": "echo Depchecking subpackages... && node scripts/add-subpackages-deps.mjs",
     "publish": "npx lerna publish",
-    "postpublish": "echo Publish completed!"
+    "postpublish": "echo Publish completed!",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "files": [
     "/dist",
@@ -31,6 +34,7 @@
     "@dot-present/theme-chalk": "workspace:*",
     "@dot-present/utils": "workspace:*",
     "@dot-present/virtual-list": "workspace:*",
+    "@dot-present/virtual-list-v2": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "react": "^19.2.4",
@@ -44,6 +48,7 @@
     "@tsconfig/node18": "^18.2.6",
     "@tsconfig/node24": "^24.0.4",
     "@vitejs/plugin-vue": "^6.0.5",
+    "@vitejs/plugin-vue-jsx": "^5.1.5",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
     "jsdom": "^28.1.0",
@@ -58,7 +63,9 @@
     "sass": "^1.98.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4",
     "vite-plugin-vue-devtools": "^8.0.6",
+    "vitepress": "2.0.0-alpha.17",
     "vitest": "^4.1.0"
   }
 }

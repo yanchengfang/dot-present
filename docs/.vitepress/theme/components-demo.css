@@ -1,0 +1,19 @@
+/* 组件示例区：参考文档站常见的预览 + 代码分层展示 */
+
+.dp-demo {
+  padding: 24px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+}
+
+.dp-demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.dp-demo + .dp-demo {
+  margin-top: 16px;
+}

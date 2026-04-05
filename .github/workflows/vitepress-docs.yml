@@ -1,0 +1,95 @@
+# 在 monorepo 内安装依赖并构建文档；产物为静态目录，可单独用于 OSS/CDN、或构建下方 Docker 镜像
+name: VitePress 文档构建
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'docs/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'rollup.config.js'
+      - 'deploy/vitepress/**'
+      - '.github/workflows/vitepress-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 启用 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
+      - name: 配置 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建组件库与样式（文档主题依赖 dist）
+        run: pnpm build
+
+      - name: 构建 VitePress
+        run: pnpm docs:build
+
+      - name: 上传静态站点产物（仅 dist，供后续部署或单独流水线使用）
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitepress-dist
+          path: docs/.vitepress/dist
+          retention-days: 14
+
+      - name: 校验仅静态资源的镜像可构建
+        run: docker build -f deploy/vitepress/Dockerfile -t dot-present-docs:ci .
+
+      # 推镜像示例（按需取消注释并配置 monorepo 仓库的 Secrets）
+      # - name: 登录容器镜像仓库
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: 推送镜像
+      #   run: |
+      #     docker tag dot-present-docs:ci ghcr.io/${{ github.repository_owner }}/dot-present-docs:latest
+      #     docker push ghcr.io/${{ github.repository_owner }}/dot-present-docs:latest
+
+  # 将构建产物 rsync 到 VPS（在仓库 Settings → Secrets and variables → Actions 中配置密钥；Variables 中设 VPS_DOCS_DEPLOY=true）
+  deploy-vps:
+    needs: build
+    runs-on: ubuntu-latest
+    if: vars.VPS_DOCS_DEPLOY == 'true'
+    steps:
+      - name: 下载静态站点产物
+        uses: actions/download-artifact@v4
+        with:
+          name: vitepress-dist
+          path: dist
+
+      - name: 加载 SSH 私钥
+        uses: webfactory/ssh-agent@v0.9.2
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+
+      - name: 记录 VPS 主机指纹
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: 同步到 VPS 目录
+        run: |
+          rsync -avz --delete -e ssh \
+            dist/ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ vars.VPS_DEPLOY_PATH }}/"
